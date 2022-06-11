@@ -91,14 +91,14 @@ set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS FILTER PMT)
 find_package(Gnuradio "3.7.0")
 find_package(GnuradioOsmosdr)
-find_package(Uhd)
+find_package(UHD)
 find_package(LibbladeRF)
 find_package(FFTW3F)
-find_package(Polarssl)
+find_package(MbedTLS)
 
-if(NOT GNURADIO_RUNTIME_FOUND)
-    message(FATAL_ERROR "GNURadio required to compile openLTE")
-endif()
+#if(NOT GNURADIO_RUNTIME_FOUND)
+    #message(FATAL_ERROR "GNURadio required to compile openLTE")
+#endif()
 
 if(NOT GNURADIO_OSMOSDR_FOUND)
     message(FATAL_ERROR "GNURadio Osmosdr required to compile openLTE (http://sdr.osmocom.org/trac/wiki/GrOsmoSDR)")
@@ -119,6 +119,7 @@ endif()
 ########################################################################
 # Setup the include and linker paths
 ########################################################################
+
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${FFTW3F_INCLUDE_DIRS}
@@ -129,6 +130,7 @@ include_directories(
     ${GNURADIO_OSMOSDR_INCLUDE_DIRS}
     ${GR_UHD_INCLUDE_DIRS}
     ${UHD_INCLUDE_DIRS}
+    ${MBEDTLS_INCLUDE_DIRS}
 )
 
 link_directories(
