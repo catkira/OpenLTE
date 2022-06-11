@@ -60,7 +60,7 @@ class LTE_fdd_dl_scan_state_machine;
                               TYPEDEFS
 *******************************************************************************/
 
-typedef boost::shared_ptr<LTE_fdd_dl_scan_state_machine> LTE_fdd_dl_scan_state_machine_sptr;
+typedef std::shared_ptr<LTE_fdd_dl_scan_state_machine> LTE_fdd_dl_scan_state_machine_sptr;
 
 typedef enum{
     LTE_FDD_DL_SCAN_STATE_MACHINE_STATE_COARSE_TIMING_SEARCH = 0,

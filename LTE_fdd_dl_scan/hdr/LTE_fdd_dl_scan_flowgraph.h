@@ -48,7 +48,7 @@
 #include "LTE_fdd_dl_scan_interface.h"
 #include "LTE_fdd_dl_scan_state_machine.h"
 #include <gnuradio/top_block.h>
-#include <gnuradio/filter/rational_resampler_base_ccf.h>
+#include <gnuradio/filter/rational_resampler.h>
 #include <gnuradio/filter/firdes.h>
 #include <osmosdr/source.h>
 
@@ -106,7 +106,7 @@ private:
     // Variables
     std::vector<float>                            resample_taps;
     gr::top_block_sptr                            top_block;
-    gr::filter::rational_resampler_base_ccf::sptr resampler_filter;
+    gr::filter::rational_resampler_ccf::sptr      resampler_filter;
     osmosdr::source::sptr                         samp_src;
     LTE_fdd_dl_scan_state_machine_sptr            state_machine;
 

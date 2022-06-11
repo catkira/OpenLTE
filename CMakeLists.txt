@@ -21,10 +21,11 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.8)
 project(openLTE CXX C)
 set(openLTE_version 0.20.5)
 enable_testing()
+cmake_policy(SET CMP0011 NEW)
 
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
@@ -34,15 +35,46 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+# Make sure our local CMake Modules path comes first
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
+
+# Set the version information here
+set(VERSION_MAJOR 1)
+set(VERSION_API    1)
+set(VERSION_ABI 0)
+set(VERSION_PATCH git)
+
+cmake_policy(SET CMP0011 NEW)
 
 ########################################################################
 # Compiler specific setup
 ########################################################################
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+    CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    AND NOT WIN32)
     #http://gcc.gnu.org/wiki/Visibility
     add_definitions(-fvisibility=hidden)
 endif()
+
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    SET(CMAKE_CXX_STANDARD 14)
+ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    SET(CMAKE_CXX_STANDARD 14)
+ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    SET(CMAKE_CXX_STANDARD 14)
+ELSE()
+    message(WARNING "C++ standard could not be set because compiler is not GNU, Clang or MSVC.")
+ENDIF()
+
+IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    SET(CMAKE_C_STANDARD 11)
+ELSEIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    SET(CMAKE_C_STANDARD 11)
+ELSEIF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    SET(CMAKE_C_STANDARD 11)
+ELSE()
+    message(WARNING "C standard could not be set because compiler is not GNU, Clang or MSVC.")
+ENDIF()
 
 ########################################################################
 # Find boost
@@ -69,36 +101,23 @@ if(NOT Boost_FOUND)
 endif()
 
 ########################################################################
-# Install directories
-########################################################################
-include(GrPlatform) #define LIB_SUFFIX
-set(GR_RUNTIME_DIR      bin)
-set(GR_LIBRARY_DIR      lib${LIB_SUFFIX})
-set(GR_INCLUDE_DIR      include)
-set(GR_DATA_DIR         share)
-set(GR_PKG_DATA_DIR     ${GR_DATA_DIR}/${CMAKE_PROJECT_NAME})
-set(GR_DOC_DIR          ${GR_DATA_DIR}/doc)
-set(GR_PKG_DOC_DIR      ${GR_DOC_DIR}/${CMAKE_PROJECT_NAME})
-set(GR_CONF_DIR         etc)
-set(GR_PKG_CONF_DIR     ${GR_CONF_DIR}/${CMAKE_PROJECT_NAME}/conf.d)
-set(GR_LIBEXEC_DIR      libexec)
-set(GR_PKG_LIBEXEC_DIR  ${GR_LIBEXEC_DIR}/${CMAKE_PROJECT_NAME})
-set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
-
-########################################################################
 # Find gnuradio build dependencies
 ########################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS FILTER PMT)
-find_package(Gnuradio "3.7.0")
+#set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS FILTER PMT)
+include(FindPkgConfig)
+find_package(Gnuradio "3.9" REQUIRED COMPONENTS runtime blocks filter pmt fft)
+include(GrVersion)
+include(GrPlatform) #define LIB_SUFFIX
+
 find_package(GnuradioOsmosdr)
 find_package(UHD)
 find_package(LibbladeRF)
-find_package(FFTW3F)
+find_package(FFTW3f)
 find_package(MbedTLS)
 
-#if(NOT GNURADIO_RUNTIME_FOUND)
-    #message(FATAL_ERROR "GNURadio required to compile openLTE")
-#endif()
+if(NOT Gnuradio_FOUND)
+    message(FATAL_ERROR "GNURadio required to compile openLTE")
+endif()
 
 if(NOT GNURADIO_OSMOSDR_FOUND)
     message(FATAL_ERROR "GNURadio Osmosdr required to compile openLTE (http://sdr.osmocom.org/trac/wiki/GrOsmoSDR)")
@@ -112,9 +131,28 @@ if(NOT LIBBLADERF_FOUND)
     message(FATAL_ERROR "LibbladeRF required to compile openLTE")
 endif()
 
-if(NOT FFTW3F_FOUND)
+if(NOT FFTW3f_FOUND)
     message(FATAL_ERROR "FFTW3 required to compile openLTE")
 endif()
+
+
+########################################################################
+# Install directories
+########################################################################
+include(GrPlatform) #define LIB_SUFFIX
+#set(GR_RUNTIME_DIR      bin)
+#set(GR_LIBRARY_DIR      lib${LIB_SUFFIX})
+set(GR_INCLUDE_DIR      include)
+#set(GR_DATA_DIR         share)
+#set(GR_PKG_DATA_DIR     ${GR_DATA_DIR}/${CMAKE_PROJECT_NAME})
+#set(GR_DOC_DIR          ${GR_DATA_DIR}/doc)
+#set(GR_PKG_DOC_DIR      ${GR_DOC_DIR}/${CMAKE_PROJECT_NAME})
+#set(GR_CONF_DIR         etc)
+#set(GR_PKG_CONF_DIR     ${GR_CONF_DIR}/${CMAKE_PROJECT_NAME}/conf.d)
+#set(GR_LIBEXEC_DIR      libexec)
+#set(GR_PKG_LIBEXEC_DIR  ${GR_LIBEXEC_DIR}/${CMAKE_PROJECT_NAME})
+set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
+
 
 ########################################################################
 # Setup the include and linker paths
@@ -165,4 +203,4 @@ add_subdirectory(LTE_fdd_dl_file_gen)
 add_subdirectory(LTE_fdd_dl_file_scan)
 add_subdirectory(LTE_fdd_dl_scan)
 add_subdirectory(LTE_file_recorder)
-add_subdirectory(LTE_fdd_enodeb)
+#add_subdirectory(LTE_fdd_enodeb)

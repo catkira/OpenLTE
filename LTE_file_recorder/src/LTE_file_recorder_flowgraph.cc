@@ -38,6 +38,7 @@
 #include "LTE_file_recorder_flowgraph.h"
 #include "libtools_scoped_lock.h"
 #include "uhd/usrp/multi_usrp.hpp"
+#include <boost/foreach.hpp>
 
 /*******************************************************************************
                               DEFINES

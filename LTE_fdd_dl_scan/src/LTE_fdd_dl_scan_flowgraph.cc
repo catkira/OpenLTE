@@ -48,6 +48,7 @@
 #include "LTE_fdd_dl_scan_flowgraph.h"
 #include "libtools_scoped_lock.h"
 #include "uhd/usrp/multi_usrp.hpp"
+#include <boost/foreach.hpp>
 
 /*******************************************************************************
                               DEFINES
@@ -298,13 +299,13 @@ LTE_FDD_DL_SCAN_STATUS_ENUM LTE_fdd_dl_scan_flowgraph::start(uint16 dl_earfcn)
 
                 if(LTE_FDD_DL_SCAN_HW_TYPE_USRP_N == hardware_type)
                 {
-                    resample_taps    = gr::filter::firdes::low_pass(384, 1, 0.00065, 0.0013, gr::filter::firdes::WIN_KAISER, 5);
-                    resampler_filter = gr::filter::rational_resampler_base_ccf::make(384, 625, resample_taps);
+                    resample_taps    = gr::filter::firdes::low_pass(384, 1, 0.00065, 0.0013, gr::fft::window::WIN_KAISER, 5);
+                    resampler_filter = gr::filter::rational_resampler_ccf::make(384, 625, resample_taps);
                     top_block->connect(samp_src, 0, resampler_filter, 0);
                     top_block->connect(resampler_filter, 0, state_machine, 0);
                 }else if(LTE_FDD_DL_SCAN_HW_TYPE_UMTRX == hardware_type){
-                    resample_taps    = gr::filter::firdes::low_pass(192, 1, 0.00065, 0.0013, gr::filter::firdes::WIN_KAISER, 5);
-                    resampler_filter = gr::filter::rational_resampler_base_ccf::make(192, 325, resample_taps);
+                    resample_taps    = gr::filter::firdes::low_pass(192, 1, 0.00065, 0.0013, gr::fft::window::WIN_KAISER, 5);
+                    resampler_filter = gr::filter::rational_resampler_ccf::make(192, 325, resample_taps);
                     top_block->connect(samp_src, 0, resampler_filter, 0);
                     top_block->connect(resampler_filter, 0, state_machine, 0);
                 }else{
